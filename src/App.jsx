@@ -3,11 +3,9 @@ import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
 
-import PatternSet from './components/PatternSet';
+
 import TopControls from './components/TopControls';
-import LatencySlider from './components/LatencySlider';
-import { TimesyncProvider } from './TimesyncContext';
-import { initLatencyCompensation } from './audioUtils';
+
 import './App.css';
 
 const partyCxs = new Map();
@@ -33,9 +31,27 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
   return connection
 }
 
+const beverages = [
+  { item: '☕️', price: 300 },
+  { item: '🍺', price: 500 },
+  { item: '🍷', price: 700 },
+  { item: '🥂', price: 800 },
+  { item: '🍾', price: 1200 },
+  { item: '🧃', price: 250 }
+];
+
+const food = [
+  { item: '🍔', price: 600 },
+  { item: '🥗', price: 450 },
+  { item: '🥪', price: 550 },
+  { item: '🥙', price: 650 },
+  { item: '🌯', price: 700 },
+  { item: '🍦', price: 300 }
+];
+
 
 function App() {
-  const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
+
   const firstPathSegment = document.location.pathname.split('/')[1];  
   const dbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
   
@@ -75,9 +91,6 @@ function App() {
 
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
-  useEffect(() => {
-    initLatencyCompensation();
-  }, []);
 
   if (partyKitHost) {
     const connection = partykitS3(database, partyKitHost);
@@ -86,11 +99,8 @@ function App() {
     console.warn("No connection");
   }
 
-  let beats = {};
-  const result = useLiveQuery('type', { key: 'beat' });
-  result.rows.forEach(row => {
-    beats[row.doc._id] = row.doc.isActive;
-  });
+  
+  const result = useLiveQuery('type', { key: 'seat' });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -108,15 +118,12 @@ function App() {
   }, []);
 
   return (
-    <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
-        <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
+        <h1 className="app-title" {...longPressHandlers}>On Time Arrival</h1>
         <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
-        <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
-        {/* <LatencySlider /> */}
         <AppInfo />
       </div>
-    </TimesyncProvider>
+    
   );
 }
 
@@ -125,8 +132,7 @@ export default App;
 const AppInfo = () => (
   <footer>
     <p>
-      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
+      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, or try <a href="https://fireproof.storage">Fireproof</a>.
     </p>
-    <img src="/qr.png" width="200" style={{ marginTop: '10px' }} />
   </footer>
 );
