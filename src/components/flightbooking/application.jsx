@@ -12,6 +12,13 @@ class FlightBooking extends React.Component {
     this.seatRefs = {}; // To store refs to the seats
     this.emojiRef = React.createRef(); // Ref to the emoji
     this.seatContainerRef = React.createRef(); // Ref to the seat container
+
+    // Add this line:
+    this.businessClassSeats = new Set([
+      'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
+      'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
+      'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+    ]);
   }
 
   setSeat = (new_seat) => {
@@ -27,7 +34,15 @@ class FlightBooking extends React.Component {
       const containerRect = this.seatContainerRef.current.getBoundingClientRect();
       const offsetTop = seatRect.top - containerRect.top;
 
-      this.emojiRef.current.style.top = `${offsetTop}px`; // Move the emoji
+      // Check if the seat is in business class
+      const isBusinessClass = this.businessClassSeats.has(seatId);
+
+      // Adjust the 'left' style based on the class
+      const leftPosition = isBusinessClass ? '50%' : '56%';
+
+      // Apply the styles to the emoji
+      this.emojiRef.current.style.top = `${offsetTop}px`; // Move the emoji vertically
+      this.emojiRef.current.style.left = leftPosition;   // Adjust horizontal position
     }
   };
 
