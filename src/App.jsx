@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
+import FlightBooking from './components/flightbooking/application';
 
 
 import TopControls from './components/TopControls';
@@ -48,6 +49,8 @@ const food = [
   { item: '🌯', price: 700 },
   { item: '🍦', price: 300 }
 ];
+
+const attendant = '🧑‍✈️'
 
 
 function App() {
@@ -121,6 +124,7 @@ function App() {
       <div className={`app ${theme}`}>
         <h1 className="app-title" {...longPressHandlers}>On Time Arrival</h1>
         <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
+        <FlightBooking />
         <AppInfo />
       </div>
     
