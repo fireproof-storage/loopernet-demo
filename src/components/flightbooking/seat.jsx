@@ -2,27 +2,25 @@ import React from "react"
 import SeatStyle from "./seat.module.scss"
 
 class Seat extends React.Component {
-  seatRef = React.createRef();
-
-  setSeat = () => {
-    const seat = this.seatRef.current.value
-    this.props.setSeat(seat)
-  }
+  handleClick = () => {
+    const { available, setSeat, seat } = this.props;
+    if (available) {
+      setSeat(seat);
+    }
+  };
 
   render() {
-    const { seat, available, currentSeat } = this.props
-    const isAvailable = available
-    const isCurrent = currentSeat === seat
-    const availableButtonClasses = isCurrent ? `${SeatStyle.button} ${SeatStyle.current}` : `${SeatStyle.button}`
+    const { seat, available, currentSeat, forwardedRef } = this.props;
+    const isSelected = currentSeat === seat;
     return (
-      <React.Fragment>
-        { isAvailable ? (
-          <button onClick={this.setSeat} ref={this.seatRef} value={seat} className={availableButtonClasses} />
-        ) : (
-          <div title={`Seat ${seat} is unavailable`} className={`${SeatStyle.button} ${SeatStyle.button_unavailable}`}/>
-        )}
-      </React.Fragment>
-    )
+      <div
+        ref={forwardedRef} // Attach the ref here
+        className={`${SeatStyle.button} ${!available ? SeatStyle.button_unavailable : ''} ${isSelected ? SeatStyle.current : ''}`}
+        onClick={this.handleClick}
+      >
+        {/* {seat} */}
+      </div>
+    );
   }
 }
 
