@@ -122,10 +122,10 @@ function App() {
 
   return (
       <div className={`app ${theme}`}>
-        <h1 className="app-title" {...longPressHandlers}>On Time Arrival</h1>
-        <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
+        {/* <h1 className="app-title" {...longPressHandlers}>On Time Arrival</h1> */}
+        {/* <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} /> */}
         <FlightBooking />
-        <AppInfo />
+        {/* <AppInfo /> */}
       </div>
     
   );
