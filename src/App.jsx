@@ -32,23 +32,6 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
   return connection
 }
 
-const beverages = [
-  { item: '☕️', price: 300 },
-  { item: '🍺', price: 500 },
-  { item: '🍷', price: 700 },
-  { item: '🥂', price: 800 },
-  { item: '🍾', price: 1200 },
-  { item: '🧃', price: 250 }
-];
-
-const food = [
-  { item: '🍔', price: 600 },
-  { item: '🥗', price: 450 },
-  { item: '🥪', price: 550 },
-  { item: '🥙', price: 650 },
-  { item: '🌯', price: 700 },
-  { item: '🍦', price: 300 }
-];
 
 const attendant = '🧑‍✈️'
 

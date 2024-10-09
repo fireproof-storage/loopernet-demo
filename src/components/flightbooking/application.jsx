@@ -5,6 +5,7 @@ import SeatStyles from "./seat.module.scss"
 import Seat from "./seat"
 import Ailse from "./ailse"
 import PlaneBG from "./plane.svg"
+import { passengerData } from "./data"
 class FlightBooking extends React.Component {
   constructor(props) {
     super(props);
@@ -20,6 +21,8 @@ class FlightBooking extends React.Component {
       'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
     ]);
   }
+
+
 
   setSeat = (new_seat) => {
     this.setState({ seat: new_seat }, () => {
@@ -71,7 +74,9 @@ class FlightBooking extends React.Component {
     this.moveEmojiToSeat('A1');
   }
 
+
   render() {
+    const currentPassenger = passengerData.find(passenger => passenger.seat === this.state.seat)?.name || 'Please select'
     const isNotSelected = this.state.seat === 'Please select'
     return (
       <div className={Application.container}>
@@ -106,7 +111,7 @@ class FlightBooking extends React.Component {
             </thead>
             <tbody>
               <tr>
-                <td>Mr. Brett Jones</td>
+                <td>{currentPassenger}</td>
                 <td>{this.state.seat}</td>
                 </tr>
             </tbody>
