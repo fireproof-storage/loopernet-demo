@@ -34,15 +34,35 @@ class FlightBooking extends React.Component {
       const containerRect = this.seatContainerRef.current.getBoundingClientRect();
       const offsetTop = seatRect.top - containerRect.top;
 
-      // Check if the seat is in business class
       const isBusinessClass = this.businessClassSeats.has(seatId);
 
-      // Adjust the 'left' style based on the class
-      const leftPosition = isBusinessClass ? '50%' : '56%';
+      // Extract the seat number (digits from the seat ID)
+      const seatNumberMatch = seatId.match(/\d+/);
+      const seatNumber = seatNumberMatch ? seatNumberMatch[0] : null;
+
+      let leftPosition;
+
+      if (isBusinessClass) {
+        // For business class seats ending with 1, 2, or 3
+        if (['1', '2', '3'].includes(seatNumber)) {
+          leftPosition = '19%';
+        } else {
+          // Default position for other business class seats
+          leftPosition = '50%';
+        }
+      } else {
+        // For economy class seats ending with 1, 2, 3, or 4
+        if (['1', '2', '3', '4'].includes(seatNumber)) {
+          leftPosition = '13%';
+        } else {
+          // Default position for other economy class seats
+          leftPosition = '56%';
+        }
+      }
 
       // Apply the styles to the emoji
-      this.emojiRef.current.style.top = `${offsetTop}px`; // Move the emoji vertically
-      this.emojiRef.current.style.left = leftPosition;   // Adjust horizontal position
+      this.emojiRef.current.style.top = `${offsetTop}px`; // Move vertically
+      this.emojiRef.current.style.left = leftPosition;    // Adjust horizontally
     }
   };
 
@@ -735,7 +755,7 @@ class FlightBooking extends React.Component {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                transition: 'top 0.5s ease-in-out', // Smooth animation
+                transition: 'top 0.5s ease-in-out, left 0.5s ease-in-out', // Add transition for left
               }}
             >
               🧑‍✈️
