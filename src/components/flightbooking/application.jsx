@@ -18,7 +18,10 @@ const FlightBooking = () => {
   const emojiRef = useRef(null);
   const seatContainerRef = useRef(null);
 
-  const { database, useLiveQuery } = useFireproof("inflight6");
+  const firstPathSegment = document.location.pathname.split('/')[1];  
+  const dbName = (import.meta.env.VITE_DBNAME || 'flt-sv') + (firstPathSegment ? '-' + firstPathSegment : '');
+
+  const { database, useLiveQuery } = useFireproof(dbName);
 
   const orders = useLiveQuery((doc, emit) => {
     if (doc.seat && !doc.delivered) {
@@ -47,8 +50,6 @@ const FlightBooking = () => {
       return acc;
     }, {});
   }, [deliveredOrders]);
-
-  console.log('mostExpensiveItemEmojiPerSeat', mostExpensiveItemEmojiPerSeat);
 
   const businessClassSeats = useMemo(() => new Set([
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
@@ -92,13 +93,16 @@ const FlightBooking = () => {
   useEffect(() => {
     moveEmojiToSeat('A1');
 
-    // console.log('useEffect setInterval');
-    const intervalId = setInterval(() => {
+    const createRandomOrder = () => {
       const randomOrder = makeRandomOrder();
       database.put(randomOrder);
-    }, 5000);
+      const randomTimeout = Math.floor(Math.random() * 8000) + 2000; // Random duration between 2000ms and 5000ms
+      timeoutId = setTimeout(createRandomOrder, randomTimeout);
+    };
 
-    return () => clearInterval(intervalId);
+    let timeoutId = setTimeout(createRandomOrder, Math.floor(Math.random() * 3000) + 2000);
+
+    return () => clearTimeout(timeoutId);
   }, [database, moveEmojiToSeat]);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import React from "react"
+import PropTypes from "prop-types"
 import SeatStyle from "./seat.module.scss"
 
 class Seat extends React.Component {
@@ -22,17 +23,29 @@ class Seat extends React.Component {
         className={availableButtonClasses}
         onClick={this.handleClick}
       >
-        {mostExpensiveItem || ""}
+        {/* {mostExpensiveItem || ""} */}
       </button>
     ) : (
-      <div
-        title={`Seat ${seat} is unavailable`}
-        className={`${SeatStyle.button} ${SeatStyle.button_unavailable}`}
-      >
-        {mostExpensiveItem || ""}
+      <div>
+        <div style={{ fontSize: '36px', position: 'absolute', zIndex: 100, marginLeft: '5px', marginTop: '1px', textAlign: 'center', width: '20px' }}>
+          {mostExpensiveItem || ""}
+        </div>
+        <div
+          title={`Seat ${seat} is unavailable`}
+          className={`${SeatStyle.button} ${SeatStyle.button_unavailable}`}
+        >
+        </div>
       </div>
     );
   }
 }
 
+Seat.propTypes = {
+  available: PropTypes.bool.isRequired,
+  setSeat: PropTypes.func.isRequired,
+  seat: PropTypes.string.isRequired,
+  currentSeat: PropTypes.string.isRequired,
+  forwardedRef: PropTypes.object,
+  mostExpensiveItem: PropTypes.string,
+};
 export default Seat

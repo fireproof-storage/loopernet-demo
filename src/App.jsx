@@ -5,7 +5,7 @@ import { ConnectPartyKit } from '@fireproof/partykit'
 import FlightBooking from './components/flightbooking/application';
 
 
-import TopControls from './components/TopControls';
+// import TopControls from './components/TopControls';
 
 import './App.css';
 
@@ -33,13 +33,13 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 }
 
 
-const attendant = '🧑‍✈️'
+// const attendant = '🧑‍✈️'
 
 
 function App() {
 
   const firstPathSegment = document.location.pathname.split('/')[1];  
-  const dbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
+  const dbName = (import.meta.env.VITE_DBNAME || 'flt-sv') + (firstPathSegment ? '-' + firstPathSegment : '');
   
   const { database, useLiveQuery } = useFireproof(dbName);
 
