@@ -1,7 +1,7 @@
 export { passengerData, makeRandomOrder };
 
 function getRandomSeat() {
-  const availableSeats = passengerData.filter(passenger => passenger.name === null);
+  const availableSeats = passengerData.filter(passenger => passenger.name !== null);
   if (availableSeats.length === 0) {
     return null; // No available seats
   }
@@ -9,13 +9,26 @@ function getRandomSeat() {
   return availableSeats[randomIndex].seat;
 }
 
+const getRandomItems = (items) => {
+  const itemCount = Math.random() < 0.8 ? 1 : Math.floor(Math.random() * 4) + 1;
+  const selectedItems = [];
+  for (let i = 0; i < itemCount; i++) {
+    const randomItem = items[Math.floor(Math.random() * items.length)];
+    selectedItems.push(randomItem);
+  }
+  return selectedItems;
+};
+
 function makeRandomOrder() {
-  const randomBeverage = beverages[Math.floor(Math.random() * beverages.length)];
-  const randomFood = food[Math.floor(Math.random() * food.length)];
+  const randomBeverages = getRandomItems(beverages);
+  const randomFoods = getRandomItems(food);
+
+  const total = [...randomBeverages, ...randomFoods].reduce((sum, item) => sum + item.price, 0);
+
   return {
-    beverage: randomBeverage,
-    food: randomFood,
-    total: randomBeverage.price + randomFood.price,
+    beverages: randomBeverages,
+    foods: randomFoods,
+    total: total,
     seat: getRandomSeat()
   };
 }

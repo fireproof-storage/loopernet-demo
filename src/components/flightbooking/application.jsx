@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Application from "./application.module.scss";
 import Progress from "./progress.module.scss";
 import SeatStyles from "./seat.module.scss";
@@ -6,12 +6,18 @@ import Seat from "./seat";
 import Ailse from "./ailse";
 import PlaneBG from "./plane.svg";
 import { passengerData, makeRandomOrder } from "./data";
+import { useFireproof } from "use-fireproof"
 
 const FlightBooking = () => {
-  const [seat, setSeat] = useState('Please select');
+  const [currentSeat, setSeat] = useState('Please select');
   const seatRefs = useRef({});
   const emojiRef = useRef(null);
   const seatContainerRef = useRef(null);
+
+  const { database, useLiveQuery } = useFireproof("flight-db");
+
+
+  const orders = useLiveQuery('seat');
 
   const businessClassSeats = new Set([
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
@@ -19,7 +25,7 @@ const FlightBooking = () => {
     'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
   ]);
 
-  const moveEmojiToSeat = (seatId) => {
+  const moveEmojiToSeat = useCallback((seatId) => {
     const seatElement = seatRefs.current[seatId];
     if (seatElement && emojiRef.current && seatContainerRef.current) {
       const seatRect = seatElement.getBoundingClientRect();
@@ -50,25 +56,28 @@ const FlightBooking = () => {
       emojiRef.current.style.top = `${offsetTop}px`;
       emojiRef.current.style.left = leftPosition;
     }
-  };
+  });
 
   useEffect(() => {
     moveEmojiToSeat('A1');
 
     const intervalId = setInterval(() => {
       const randomOrder = makeRandomOrder();
-      console.log(randomOrder);
+      database.put(randomOrder);
     }, 5000);
 
     return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
-    moveEmojiToSeat(seat);
-  }, [seat]);
+    moveEmojiToSeat(currentSeat);
+  }, [currentSeat, moveEmojiToSeat]);
 
-  const currentPassenger = passengerData.find(passenger => passenger.seat === seat)?.name || 'Please select';
-  const isNotSelected = seat === 'Please select';
+  const currentPassenger = passengerData.find(passenger => passenger.seat === currentSeat)?.name || 'Please select';
+  const isNotSelected = currentPassenger === 'Please select';
+
+  console.log(currentSeat, currentPassenger);
+
 
   return (
     <div className={Application.container}>
@@ -104,7 +113,7 @@ const FlightBooking = () => {
           <tbody>
             <tr>
               <td>{currentPassenger}</td>
-              <td>{seat}</td>
+              <td>{currentSeat}</td>
             </tr>
           </tbody>
         </table>
@@ -115,7 +124,7 @@ const FlightBooking = () => {
           {isNotSelected ? (
             <p>&nbsp;</p>
           ) : (
-            <p>{seat}</p>
+            <p>{currentSeat}</p>
           )}
         </div>
         <button disabled={isNotSelected}>Continue</button>
@@ -132,12 +141,12 @@ const FlightBooking = () => {
                 if (seat === "a") {
                   return <Ailse key={index} />;
                 } else {
-                  const available = passengerData.find(p => p.seat === seat)?.name !== null;
+                  const available = orders.docs.some(order => order.seat === seat);
                   return (
                     <Seat
                       key={seat}
                       setSeat={setSeat}
-                      currentSeat={seat}
+                      currentSeat={currentSeat}
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
@@ -151,12 +160,12 @@ const FlightBooking = () => {
                 if (seat === "a") {
                   return <Ailse key={index} />;
                 } else {
-                  const available = passengerData.find(p => p.seat === seat)?.name !== null;
+                  const available = orders.docs.some(order => order.seat === seat);
                   return (
                     <Seat
                       key={seat}
                       setSeat={setSeat}
-                      currentSeat={seat}
+                      currentSeat={currentSeat}
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
@@ -170,12 +179,12 @@ const FlightBooking = () => {
                 if (seat === "a") {
                   return <Ailse key={index} />;
                 } else {
-                  const available = passengerData.find(p => p.seat === seat)?.name !== null;
+                  const available = orders.docs.some(order => order.seat === seat);
                   return (
                     <Seat
                       key={seat}
                       setSeat={setSeat}
-                      currentSeat={seat}
+                      currentSeat={currentSeat}
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
