@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Application from "./application.module.scss";
 import Progress from "./progress.module.scss";
 import SeatStyles from "./seat.module.scss";
@@ -8,22 +8,53 @@ import PlaneBG from "./plane.svg";
 import { passengerData, makeRandomOrder } from "./data";
 import { useFireproof } from "use-fireproof"
 
+const formatPenniesAsDollarString = (pennies) => {
+  return `$${(pennies / 100).toFixed(2)}`;
+}
+
 const FlightBooking = () => {
   const [currentSeat, setSeat] = useState('Please select');
   const seatRefs = useRef({});
   const emojiRef = useRef(null);
   const seatContainerRef = useRef(null);
 
-  const { database, useLiveQuery } = useFireproof("flight-db");
+  const { database, useLiveQuery } = useFireproof("inflight6");
 
+  const orders = useLiveQuery((doc, emit) => {
+    if (doc.seat && !doc.delivered) {
+      emit(doc.seat);
+    }
+  });
+  const selectedOrdersQuery = useLiveQuery((doc, emit) => {
+    if (doc.seat) {
+      emit(doc.seat);
+    }
+  }, { key: currentSeat });
+  const selectedOrders = selectedOrdersQuery.docs;
 
-  const orders = useLiveQuery('seat');
+  const deliveredOrders = useLiveQuery((doc, emit) => {
+    if (doc.seat && doc.delivered) {
+      emit(doc.seat);
+    }
+  });
 
-  const businessClassSeats = new Set([
+  const mostExpensiveItemEmojiPerSeat = useMemo(() => {
+    return deliveredOrders.docs.reduce((acc, order) => {
+      const mostExpensiveBeverage = order.beverages.reduce((max, beverage) => beverage.price > max.price ? beverage : max, order.beverages[0]);
+      const mostExpensiveFood = order.foods.reduce((max, food) => food.price > max.price ? food : max, order.foods[0]);
+      const mostExpensiveItem = mostExpensiveBeverage.price > mostExpensiveFood.price ? mostExpensiveBeverage : mostExpensiveFood;
+      acc[order.seat] = mostExpensiveItem.item;
+      return acc;
+    }, {});
+  }, [deliveredOrders]);
+
+  console.log('mostExpensiveItemEmojiPerSeat', mostExpensiveItemEmojiPerSeat);
+
+  const businessClassSeats = useMemo(() => new Set([
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
     'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
     'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-  ]);
+  ]), []);
 
   const moveEmojiToSeat = useCallback((seatId) => {
     const seatElement = seatRefs.current[seatId];
@@ -56,28 +87,34 @@ const FlightBooking = () => {
       emojiRef.current.style.top = `${offsetTop}px`;
       emojiRef.current.style.left = leftPosition;
     }
-  });
+  }, [businessClassSeats]);
 
   useEffect(() => {
     moveEmojiToSeat('A1');
 
+    // console.log('useEffect setInterval');
     const intervalId = setInterval(() => {
       const randomOrder = makeRandomOrder();
       database.put(randomOrder);
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [database, moveEmojiToSeat]);
 
   useEffect(() => {
     moveEmojiToSeat(currentSeat);
-  }, [currentSeat, moveEmojiToSeat]);
+    const timeout = setTimeout(() => {
+      selectedOrders.forEach(order => {
+        database.put({ ...order, delivered: true });
+      });
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [currentSeat, moveEmojiToSeat, selectedOrders, database]);
 
   const currentPassenger = passengerData.find(passenger => passenger.seat === currentSeat)?.name || 'Please select';
   const isNotSelected = currentPassenger === 'Please select';
 
-  console.log(currentSeat, currentPassenger);
-
+  // console.log(currentSeat, currentPassenger, selectedOrders, orders);
 
   return (
     <div className={Application.container}>
@@ -117,6 +154,42 @@ const FlightBooking = () => {
             </tr>
           </tbody>
         </table>
+        <h2>Order Items</h2>
+        <table className={Application.table} cellSpacing="0">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedOrders.map((order, index) => (
+              <React.Fragment key={index}>
+                <tr>
+                  <td colSpan="2" style={{ fontWeight: 'lighter', borderBottom: '1px solid #555', textAlign: 'left' }}>
+                    Order: {order._id.slice(-7)}
+                  </td>
+                </tr>
+                {order.beverages.map((beverage, idx) => (
+                  <tr key={`bev-${idx}`}>
+                    <td style={{ fontSize: '24px' }}>{beverage.item}</td>
+                    <td>{formatPenniesAsDollarString(beverage.price)}</td>
+                  </tr>
+                ))}
+                {order.foods.map((food, idx) => (
+                  <tr key={`food-${idx}`}>
+                    <td style={{ fontSize: '24px' }}>{food.item}</td>
+                    <td>{formatPenniesAsDollarString(food.price)}</td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+            <tr>
+              <td style={{ borderTop: '1px solid #333' }}>Total</td>
+              <td style={{ fontWeight: 'bold', borderTop: '1px solid #555' }}>{formatPenniesAsDollarString(selectedOrders.reduce((sum, order) => sum + order.total, 0))}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div className={Application.footer}>
         <div className={Application.summary}>
@@ -142,6 +215,7 @@ const FlightBooking = () => {
                   return <Ailse key={index} />;
                 } else {
                   const available = orders.docs.some(order => order.seat === seat);
+                  const mostExpensiveItem = mostExpensiveItemEmojiPerSeat[seat];
                   return (
                     <Seat
                       key={seat}
@@ -150,6 +224,7 @@ const FlightBooking = () => {
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
+                      mostExpensiveItem={mostExpensiveItem}
                     />
                   );
                 }
@@ -161,6 +236,7 @@ const FlightBooking = () => {
                   return <Ailse key={index} />;
                 } else {
                   const available = orders.docs.some(order => order.seat === seat);
+                  const mostExpensiveItem = mostExpensiveItemEmojiPerSeat[seat];
                   return (
                     <Seat
                       key={seat}
@@ -169,6 +245,7 @@ const FlightBooking = () => {
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
+                      mostExpensiveItem={mostExpensiveItem}
                     />
                   );
                 }
@@ -180,6 +257,7 @@ const FlightBooking = () => {
                   return <Ailse key={index} />;
                 } else {
                   const available = orders.docs.some(order => order.seat === seat);
+                  const mostExpensiveItem = mostExpensiveItemEmojiPerSeat[seat];
                   return (
                     <Seat
                       key={seat}
@@ -188,6 +266,7 @@ const FlightBooking = () => {
                       seat={seat}
                       available={available}
                       forwardedRef={(ref) => (seatRefs.current[seat] = ref)}
+                      mostExpensiveItem={mostExpensiveItem}
                     />
                   );
                 }

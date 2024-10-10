@@ -33,24 +33,22 @@ function makeRandomOrder() {
   };
 }
 
-
-
 const beverages = [
-  { item: '☕️', price: 300 },
-  { item: '🍺', price: 500 },
-  { item: '🍷', price: 700 },
-  { item: '🥂', price: 800 },
-  { item: '🍾', price: 1200 },
-  { item: '🧃', price: 250 }
+  { item: '☕️', price: 495 },
+  { item: '🍺', price: 695 },
+  { item: '🍷', price: 987 },
+  { item: '🥂', price: 1195 },
+  { item: '🍾', price: 1487 },
+  { item: '🧃', price: 295 }
 ];
 
 const food = [
-  { item: '🍔', price: 600 },
-  { item: '🥗', price: 450 },
-  { item: '🥪', price: 550 },
-  { item: '🥙', price: 650 },
-  { item: '🌯', price: 700 },
-  { item: '🍦', price: 300 }
+  { item: '🍔', price: 795 },
+  { item: '🥗', price: 587 },
+  { item: '🥪', price: 695 },
+  { item: '🥙', price: 787 },
+  { item: '🌯', price: 895 },
+  { item: '🍦', price: 387 }
 ];
 const passengerData = [
   { seat: "A1", name: "Brett Jones" },

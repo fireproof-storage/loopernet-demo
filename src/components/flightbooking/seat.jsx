@@ -10,7 +10,7 @@ class Seat extends React.Component {
   };
 
   render() {
-    const { seat, available, currentSeat, forwardedRef } = this.props;
+    const { seat, available, currentSeat, forwardedRef, mostExpensiveItem } = this.props;
     const isCurrent = currentSeat === seat;
     const availableButtonClasses = isCurrent
       ? `${SeatStyle.button} ${SeatStyle.current}`
@@ -22,14 +22,14 @@ class Seat extends React.Component {
         className={availableButtonClasses}
         onClick={this.handleClick}
       >
-        {/* {seat} */}
+        {mostExpensiveItem || ""}
       </button>
     ) : (
       <div
         title={`Seat ${seat} is unavailable`}
         className={`${SeatStyle.button} ${SeatStyle.button_unavailable}`}
       >
-        {/* {seat} */}
+        {mostExpensiveItem || ""}
       </div>
     );
   }
